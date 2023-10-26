@@ -4,6 +4,10 @@ import { useState, useCallback } from 'react'
 import React from 'react'
 import Input from '../Input';
 import Modal from '../Modal';
+// import {signIn} from 'next-auth/react'
+import toast from 'react-hot-toast';
+import axios from 'axios';
+import useUser from '@/hooks/useUser';
 
 const LoginModal = () => {
 
@@ -13,17 +17,32 @@ const LoginModal = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+   
+    const userModel = useUser();
 
-    const onSubmit = useCallback(() => {
+    const onSubmit = useCallback(async() => {
         try {
             setIsLoading(true);
 
             /// todo and login
-
-            LoginModal.onClose();
+            const response = await axios.post('/api/login' , 
+            {email : email,
+             password : password
+            })
+            
+            if(response.data.ok) {
+                localStorage.setItem('token' , response.data.token);
+                userModel.setUser();
+                LoginModal.onClose();
+                toast.success("successful log in");
+            }else{
+                toast.error("something went wrong");
+                return;
+            }   
 
         } catch (error) {
             console.log(error);
+            toast.error("error in logging in");
         } finally {
             setIsLoading(false);
         }
@@ -50,6 +69,7 @@ const LoginModal = () => {
 
             <Input
                 placeholder='Password'
+                type='password'
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
                 disabled={isLoading}
