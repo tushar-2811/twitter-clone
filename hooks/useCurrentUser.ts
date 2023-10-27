@@ -1,15 +1,22 @@
-import useSWR from "swr";
-import fetcher from "@/libs/fetcher";
+import useSWR from "swr";;
+import axios from "axios";
 
-const useCurrentUser = () => {
-    const {data , error , isLoading , mutate } = useSWR('/api/current' , fetcher);
+const fetcherfxn = async(url:string) => {
+    const {data} = await axios.get(url , {
+        headers : {
+            Authorization : `Bearer ${localStorage.getItem('token')}`
+        }
+       })
+       return data.user;
+}
+
+const useCurrentUser = (url:string) => {
+    const {data , isLoading  } = useSWR(url , fetcherfxn);
     console.log("inside useCurrentUser---->" + data);
 
     return {
         data,
-        error,
-        isLoading, 
-        mutate
+        isLoading,       
     }
 }
 
